@@ -4,12 +4,13 @@ const node: CodeNode = {
   id: "Sub",
   inputs: {
     a: { mode: "required" },
+    b: { mode: "required" },
   },
   outputs: {
     r: nodeOutput(),
   },
   run: (inputs, outputs) => {
-    outputs.r.next(inputs.a - 1);
+    outputs.r.next(inputs.a - inputs.b);
   },
 };
 

@@ -1,10 +1,13 @@
 import { Subject } from "rxjs";
 import { OMapF } from "..";
 
+import { isStaticInputPinConfig } from ".";
 import { repeat, testDataCreator } from "../common";
 import {
   queueInputPinConfig,
   QueueInputPinConfig,
+  StaticInputPinConfig,
+  staticInputPinConfig,
   StickyInputPinConfig,
 } from "./pin-config";
 
@@ -17,6 +20,7 @@ export interface BasePinData {
 
 export interface InputPin extends BasePinData {
   mode?: InputMode;
+  defaultValue?: any;
 }
 
 export type InputPinMap = Record<string, InputPin>;
@@ -54,7 +58,11 @@ export type DynamicNodeInput = {
   config: StickyInputPinConfig | QueueInputPinConfig;
 };
 
-export type NodeInput = DynamicNodeInput;
+export type StaticNodeInput = {
+  config: StaticInputPinConfig;
+};
+
+export type NodeInput = DynamicNodeInput | StaticNodeInput;
 
 export type NodeOutput = Subject<any>;
 
@@ -82,3 +90,44 @@ export const dynamicNodeInputs = (count: number = 10) =>
       };
     })()
   );
+
+export const staticNodeInput = (value: any): StaticNodeInput => ({
+  config: staticInputPinConfig(value),
+});
+
+export const isDynamicInput = (
+  arg: NodeInput | undefined
+): arg is DynamicNodeInput => {
+  const dArg = arg as DynamicNodeInput;
+  return dArg && dArg.subject && !!dArg.subject.next;
+};
+
+export const isStaticInput = (
+  arg: NodeInput | undefined
+): arg is StaticNodeInput => {
+  return isStaticInputPinConfig(arg?.config);
+};
+
+export const extractStaticValue = (arg: NodeInput) => {
+  if (isStaticInput(arg)) {
+    return arg.config.value;
+  } else {
+    throw new Error(`Cannot extract static value from non static arg`);
+  }
+};
+
+export const isEnvValue = (value: any) => {
+  return typeof value === "string" && value.startsWith("$ENV.");
+};
+
+export const toEnvValue = (name: any) => {
+  return `$ENV.${name}`;
+};
+
+export const getEnvKeyFromValue = (value: string) => {
+  if (typeof value === "string") {
+    return value.replace(/^\$ENV\./, "");
+  } else {
+    return value;
+  }
+};

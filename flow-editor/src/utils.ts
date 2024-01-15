@@ -1,5 +1,9 @@
 import { isJsxValue } from "./visual-node-editor/utils";
-
+import {
+  getEnvKeyFromValue,
+  isEnvValue,
+  isStaticValueVisualNode,
+} from "@flyde/core";
 import moment from "moment";
 import React from "react";
 
@@ -59,6 +63,14 @@ export const toString = (v: any): string => {
 
   if (isJsxValue(v)) {
     return "JSX Value";
+  }
+
+  if (isStaticValueVisualNode(v)) {
+    return "Embedded Node";
+  }
+
+  if (isEnvValue(v)) {
+    return getEnvKeyFromValue(v);
   }
 
   switch (type) {

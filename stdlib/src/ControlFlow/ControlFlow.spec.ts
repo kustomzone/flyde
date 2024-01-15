@@ -4,15 +4,12 @@ import {
   execute,
   inlineNodeInstance,
   randomInt,
+  staticInputPinConfig,
   VisualNode,
 } from "@flyde/core";
 import { assert } from "chai";
 
-import {
-  conciseNode,
-  spiedOutput,
-  valueNode,
-} from "@flyde/core/dist/test-utils";
+import { conciseNode, spiedOutput } from "@flyde/core/dist/test-utils";
 import { Publish, Subscribe } from "./ControlFlow.flyde";
 
 describe("ControlFlow", () => {
@@ -26,13 +23,12 @@ describe("ControlFlow", () => {
         inputs: ["a"],
         outputs: ["b"],
         instances: [
-          inlineNodeInstance("key", valueNode("key", key)),
-          inlineNodeInstance("i1", Publish),
-          inlineNodeInstance("i2", Subscribe),
+          inlineNodeInstance("i1", Publish, { key: staticInputPinConfig(key) }),
+          inlineNodeInstance("i2", Subscribe, {
+            key: staticInputPinConfig(key),
+          }),
         ],
         connections: [
-          ["key.r", "i1.key"],
-          ["key.r", "i2.key"],
           ["a", "i1.value"],
           ["i2.value", "b"],
         ],

@@ -1,18 +1,21 @@
 import {
   CodeNode,
+  isDynamicInput,
   NodeInput,
   NodeInputs,
+  staticNodeInput,
   NodeOutputs,
   dynamicOutput,
   dynamicNodeInput,
   NodeInstance,
   VisualNode,
   queueInputPinConfig,
+  isStaticInputPinConfig,
   NodeOutput,
   NodeState,
   getNode,
 } from "../node";
-import { CancelFn, execute, Debugger } from "../execute";
+import { CancelFn, execute, Debugger, ExecuteEnv } from "../execute";
 import { DepGraph, isDefined, noop, okeys, OMap, randomInt } from "../common";
 import {
   ERROR_PIN_ID,
@@ -60,6 +63,7 @@ export const connect = (
   ancestorsInsIds?: string,
   mainState: OMap<NodeState> = {},
   onBubbleError: (err: any) => void = noop,
+  env: ExecuteEnv = {},
   extraContext: Record<string, any> = {}
 ): CodeNode => {
   const { id: maybeId, connections, instances } = node;
@@ -114,9 +118,13 @@ export const connect = (
           const inputConfig =
             (instance.inputConfig || {})[k] || queueInputPinConfig();
 
-          args[k] = dynamicNodeInput({
-            config: inputConfig,
-          });
+          if (isStaticInputPinConfig(inputConfig)) {
+            args[k] = staticNodeInput(inputConfig.value);
+          } else {
+            args[k] = dynamicNodeInput({
+              config: inputConfig,
+            });
+          }
         });
 
         args[TRIGGER_PIN_ID] = dynamicNodeInput({
@@ -254,6 +262,12 @@ export const connect = (
         }
 
         const sub = sourceOutput.subscribe(async (val: any) => {
+          if (!isDynamicInput(targetArg)) {
+            console.info(targetArg);
+            throw new Error(
+              `Impossible state listening to non dynamic input - ${toInstanceId}.${toInstancePinId}`
+            );
+          }
           targetArg.subject.next(val);
         });
         cancelFns.push(() => sub.unsubscribe());
@@ -308,7 +322,12 @@ export const connect = (
           // remove unusedInputs
 
           for (const key in inputs) {
-            if (!connectedInputs.has(`${instance.id}.${key}`)) {
+            const inputConfig = instance.inputConfig[key];
+
+            if (
+              !connectedInputs.has(`${instance.id}.${key}`) &&
+              !isStaticInputPinConfig(inputConfig)
+            ) {
               // arg was not connected, remove its
               delete inputs[key];
             }
@@ -327,6 +346,7 @@ export const connect = (
             onBubbleError,
             onCompleted: () => onInstanceCompleted(instance.id),
             onStarted: () => onInstanceStarted(instance.id),
+            env,
           });
           cancelFns.push(cancel);
         });
@@ -338,10 +358,16 @@ export const connect = (
         inputs.forEach((input) => {
           const fnArg = fnArgs[key];
 
-          if (isDefined(fnArg)) {
-            input.subject.next(fnArg);
+          if (isDynamicInput(input)) {
+            if (isDefined(fnArg)) {
+              input.subject.next(fnArg);
+            } else {
+              // skipping emitting an undefined value. VERY UNSURE OF THIS, TRIGGER WAS VISUAL MERGE
+            }
           } else {
-            // skipping emitting an undefined value. VERY UNSURE OF THIS, TRIGGER WAS VISUAL MERGE
+            throw new Error(
+              `Unsure what to do with key ${key}, input: ${input} of ins ${ancestorsInsIds}`
+            );
           }
         });
       });

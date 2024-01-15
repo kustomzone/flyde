@@ -4,6 +4,7 @@ import {
   CustomNode,
   VisualNode,
   InputPinsConfig,
+  maybeGetStaticValueNodeId,
   Node,
   NodeDefinition,
 } from "./node";
@@ -13,7 +14,14 @@ export * from "./execute";
 export * from "./simplified-execute";
 export * from "./node";
 export * from "./node/get-node-with-dependencies";
+export * from "./inline-value-to-code-node";
 export * from "./flow-schema";
+
+export type InputStaticValue = string | number | object | VisualNode;
+
+export const isStaticValueVisualNode = (val: InputStaticValue): boolean => {
+  return !!val && !!maybeGetStaticValueNodeId(`${val}`);
+};
 
 export interface InstanceViewData {
   id: string;

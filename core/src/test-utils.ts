@@ -92,9 +92,9 @@ export const conciseCodeNode = (concise: ConciseCodeNode): CodeNode => {
   };
 };
 
-export const valueNode = (id: string, value: any) =>
+export const valueNode = (name: string, value: any) =>
   conciseCodeNode({
-    id,
+    id: name,
     inputs: [],
     outputs: ["r"],
     run: (_, outputs) => outputs.r?.next(value),

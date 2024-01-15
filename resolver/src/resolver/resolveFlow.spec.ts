@@ -7,6 +7,7 @@ import {
   NodesCollection,
   randomInt,
   RefNodeInstance,
+  staticNodeInput,
   VisualNode,
 } from "@flyde/core";
 import { assert } from "chai";
@@ -38,15 +39,12 @@ describe("resolver", () => {
     const resolvedDeps = data.dependencies as NodesCollection;
 
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
     execute({
       node,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
-
-    n.subject.next(2);
 
     assert.equal(s.lastCall.args[0], 3);
   }).timeout(50);
@@ -60,16 +58,14 @@ describe("resolver", () => {
     const resolvedDeps = data.dependencies as NodesCollection;
 
     const [s, r] = spiedOutput();
-
-    const n = dynamicNodeInput();
     execute({
       node,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
 
-    n.subject.next(2);
+    // const val = await simplifiedExecute(data.main, resolvedDeps, { n: 2 });
 
     assert.equal(s.lastCall.args[0], 3);
   });
@@ -92,15 +88,12 @@ describe("resolver", () => {
       ]);
 
       const [s, r] = spiedOutput();
-      const n = dynamicNodeInput();
       execute({
         node: data.main,
         resolvedDeps: resolvedDeps,
-        inputs: { n },
+        inputs: { n: staticNodeInput(2) },
         outputs: { r },
       });
-
-      n.subject.next(2);
 
       assert.equal(s.lastCall.args[0], 3);
     });
@@ -154,19 +147,17 @@ describe("resolver", () => {
       const resolvedDeps = data.dependencies as NodesCollection;
 
       const [s, r] = spiedOutput();
-      const n = dynamicNodeInput();
       execute({
         node: data.main,
         resolvedDeps: resolvedDeps,
-        inputs: { n },
+        inputs: { n: staticNodeInput(2) },
         outputs: { r },
       });
-
-      n.subject.next(2);
 
       assert.equal(s.lastCall.args[0], 5);
 
       const keys = _.keys(resolvedDeps);
+      console.log(keys);
 
       assert.deepEqual(keys, [
         "Container__Special",
@@ -179,6 +170,7 @@ describe("resolver", () => {
       const inlineContainer = (
         resolvedContainer.instances[0] as InlineNodeInstance
       ).node as VisualNode;
+      console.log("inlineContainer", inlineContainer);
 
       assert.equal(
         (inlineContainer.instances[0] as RefNodeInstance).nodeId,
@@ -195,14 +187,12 @@ describe("resolver", () => {
 
     const resolvedDeps = data.dependencies as NodesCollection;
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
     execute({
       node: data.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
-    n.subject.next(2);
     assert.equal(s.lastCall.args[0], 3);
     assert.match(
       data.dependencies.Add1?.source.path ?? "",
@@ -221,11 +211,10 @@ describe("resolver", () => {
 
     const resolvedDeps = data.dependencies as NodesCollection;
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
     execute({
       node: data.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
 
@@ -263,15 +252,12 @@ describe("resolver", () => {
     const resolvedDeps = flow.dependencies as NodesCollection;
 
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
     execute({
       node: flow.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
-
-    n.subject.next(2);
 
     assert.equal(s.lastCall.args[0], 2 + 1);
   });
@@ -310,15 +296,12 @@ describe("resolver", () => {
     const resolvedDeps = flow.dependencies as NodesCollection;
 
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
     execute({
       node: flow.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
-
-    n.subject.next(2);
 
     assert.equal(s.lastCall.args[0], 2 + 1 + 2);
   }).timeout(20);
@@ -342,15 +325,12 @@ describe("resolver", () => {
     // const val = await simplifiedExecute(flow.main, resolvedDeps, { n: 2 });
 
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
-
     execute({
       node: flow.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
-    n.subject.next(2);
     assert.equal(s.lastCall.args[0], 2 + 1);
   });
 
@@ -364,15 +344,12 @@ describe("resolver", () => {
     assert.exists(resolvedDeps.Add1Wrapper);
 
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
     execute({
       node: flow.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
-
-    n.subject.next(2);
 
     assert.equal(s.lastCall.args[0], 2 + 1);
   });
@@ -397,18 +374,14 @@ describe("resolver", () => {
     );
 
     const [s, r] = spiedOutput();
-
-    const n = dynamicNodeInput();
     execute({
       node: flow.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(5) },
       outputs: { r },
     });
 
-    n.subject.next(5);
-
-    assert.equal(s.lastCall.args[0], 5 + 1 - 1);
+    assert.equal(s.lastCall.args[0], 5 + 1 - 2);
   });
 
   it("resolves flow by content", async () => {
@@ -422,15 +395,12 @@ describe("resolver", () => {
     const resolvedDeps = resolvedFlow.dependencies as NodesCollection;
 
     const [s, r] = spiedOutput();
-    const n = dynamicNodeInput();
     execute({
       node,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
-
-    n.subject.next(2);
 
     assert.equal(s.lastCall.args[0], 3);
   });
@@ -446,16 +416,12 @@ describe("resolver", () => {
 
       const [s, r] = spiedOutput();
 
-      const n = dynamicNodeInput();
-
       execute({
         node,
         resolvedDeps: resolvedDeps,
-        inputs: { n },
+        inputs: { n: staticNodeInput(2) },
         outputs: { r },
       });
-
-      n.subject.next(2);
 
       assert.equal(s.lastCall.args[0], 1);
     });
@@ -469,18 +435,14 @@ describe("resolver", () => {
     const resolvedDeps = data.dependencies as NodesCollection;
 
     const [s, r] = spiedOutput();
-
-    const n = dynamicNodeInput();
     execute({
       node: data.main,
       resolvedDeps: resolvedDeps,
-      inputs: { n },
+      inputs: { n: staticNodeInput(2) },
       outputs: { r },
     });
 
-    n.subject.next(2);
-
-    assert.equal(s.lastCall.args[0], 4);
+    assert.equal(s.lastCall.args[0], 3);
   });
 
   describe("macro nodes", () => {
@@ -493,16 +455,12 @@ describe("resolver", () => {
 
       const [s, r] = spiedOutput();
 
-      const n = dynamicNodeInput();
-
       execute({
         node,
         resolvedDeps: resolvedDeps,
-        inputs: { n },
+        inputs: { n: staticNodeInput(2) },
         outputs: { r },
       });
-
-      n.subject.next(2);
 
       assert.equal(s.lastCall.args[0], 2);
       assert.equal(s.getCalls().length, 3); // duplicate macro duplicates to 3
@@ -517,16 +475,12 @@ describe("resolver", () => {
 
       const [s, r] = spiedOutput();
 
-      const n = dynamicNodeInput();
-
       execute({
         node,
         resolvedDeps: resolvedDeps,
-        inputs: { n },
+        inputs: { n: staticNodeInput(2) },
         outputs: { r },
       });
-
-      n.subject.next(2);
 
       assert.equal(s.lastCall.args[0], 3);
     });
@@ -538,16 +492,12 @@ describe("resolver", () => {
 
       const [s, r] = spiedOutput();
 
-      const n = dynamicNodeInput();
-
       execute({
         node,
         resolvedDeps: resolvedDeps,
-        inputs: { n },
+        inputs: { n: staticNodeInput(2) },
         outputs: { r },
       });
-
-      n.subject.next(2);
 
       assert.equal(s.lastCall.args[0], 2);
       assert.equal(s.getCalls().length, 3); // duplicate macro duplicates to 3

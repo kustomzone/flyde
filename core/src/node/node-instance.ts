@@ -66,13 +66,13 @@ export const nodeInstance = (
 });
 
 export const inlineNodeInstance = (
-  insId: string,
+  id: string,
   node: Node,
   config?: InputPinsConfig,
   pos?: Pos
 ): NodeInstance =>
   ({
-    id: insId,
+    id,
     node,
     inputConfig: config || {},
     pos: pos || { x: 0, y: 0 },

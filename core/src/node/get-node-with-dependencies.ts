@@ -1,4 +1,4 @@
-import { CustomNode } from ".";
+import { CustomNode, isInlineValueNode } from ".";
 import { CustomNodeCollection, removeDupes } from "..";
 import { isRefNodeInstance, RefNodeInstance } from "./node-instance";
 
@@ -7,6 +7,10 @@ export const getNodeWithDependencies = (
   resolvedDeps: CustomNodeCollection,
   existingIds: string[] = []
 ): CustomNode[] => {
+  if (isInlineValueNode(node)) {
+    return [node];
+  }
+
   if (existingIds.includes(node.id)) {
     return [];
   }
